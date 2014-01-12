@@ -231,7 +231,6 @@ static void check_empty(const unsigned char *lptr)
 static void doinclude(int silent)
 {
   char name[_MAX_PATH];
-  char *ptr;
   char c;
   int i, result;
 
