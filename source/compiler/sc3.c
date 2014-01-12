@@ -1111,10 +1111,10 @@ static int hier13(value *lval)
     array1= (lval->ident==iARRAY || lval->ident==iREFARRAY);
     array2= (lval2.ident==iARRAY || lval2.ident==iREFARRAY);
     if (array1 && !array2) {
-      char *ptr=(lval->sym->name!=NULL) ? lval->sym->name : "-unknown-";
+      char *ptr=(lval->sym->name[0]!='\0') ? lval->sym->name : "-unknown-";
       error(33,ptr);            /* array must be indexed */
     } else if (!array1 && array2) {
-      char *ptr=(lval2.sym->name!=NULL) ? lval2.sym->name : "-unknown-";
+      char *ptr=(lval2.sym->name[0]!='\0') ? lval2.sym->name : "-unknown-";
       error(33,ptr);            /* array must be indexed */
     } /* if */
     /* ??? if both are arrays, should check dimensions */
