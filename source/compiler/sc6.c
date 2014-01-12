@@ -216,7 +216,7 @@ static char *stripwhitespace(char *str)
   if (*str!='\0') {
     size_t len = strlen(str);
     size_t i;
-	for (i=len; i-- > 0;) {
+    for (i=len; i-- > 0;) {
       if (!isspace(str[i])) {
         str[i+1]='\0';
         break;
@@ -735,7 +735,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   /* count number of public and native functions and public variables */
   for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
     int match=0;
-	assert(sym!=NULL);
+    assert(sym!=NULL);
     if (sym->ident==iFUNCTN) {
       if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr>=0)
         match=++numnatives;
