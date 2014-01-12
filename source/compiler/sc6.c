@@ -73,7 +73,7 @@ static ucell hex2long(const char *s,char **n)
     s++;
   } /* if */
 
-  assert((*s>='0' && *s<='9') || (*s>='a' && *s<='f') || (*s>='a' && *s<='f'));
+  assert((*s>='0' && *s<='9') || (*s>='a' && *s<='f') || (*s>='A' && *s<='F'));
   for ( ;; ) {
     if (*s>='0' && *s<='9')
       digit=*s-'0';
@@ -216,7 +216,7 @@ static char *stripwhitespace(char *str)
   if (*str!='\0') {
     size_t len = strlen(str);
     size_t i;
-    for (i=len-1; i>=0; i--) {
+	for (i=len; i-- > 0;) {
       if (!isspace(str[i])) {
         str[i+1]='\0';
         break;
@@ -735,6 +735,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   /* count number of public and native functions and public variables */
   for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
     int match=0;
+	assert(sym!=NULL);
     if (sym->ident==iFUNCTN) {
       if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr>=0)
         match=++numnatives;
@@ -750,7 +751,6 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
     } /* if */
     if (match) {
       char alias[sNAMEMAX+1];
-      assert(sym!=NULL);
       if ((sym->usage & uNATIVE)==0 || !lookup_alias(alias,sym->name)) {
         assert(strlen(sym->name)<=sNAMEMAX);
         strcpy(alias,sym->name);
