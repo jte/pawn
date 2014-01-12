@@ -400,8 +400,7 @@ static SEQUENCE *sequences;
 
 SC_FUNC int phopt_init(void)
 {
-  int number, i, len;
-  char str[160];
+  int number, i;
 
   /* count number of sequences */
   for (number=0; sequences_cmp[number].find!=NULL; number++)
@@ -420,18 +419,12 @@ SC_FUNC int phopt_init(void)
 
   /* expand all strings */
   for (i=0; i<number-1; i++) {
-    len = strexpand(str,(unsigned char*)sequences_cmp[i].find,sizeof str,SCPACK_TABLE);
-    assert(len<=sizeof str);
-    assert(len==(int)strlen(str)+1);
-    sequences[i].find=(char*)malloc(len);
+    sequences[i].find=(char*)malloc(strlen(sequences_cmp[i].find)+1);
     if (sequences[i].find!=NULL)
-      strcpy(sequences[i].find,str);
-    len = strexpand(str,(unsigned char*)sequences_cmp[i].replace,sizeof str,SCPACK_TABLE);
-    assert(len<=sizeof str);
-    assert(len==(int)strlen(str)+1);
-    sequences[i].replace=(char*)malloc(len);
+      strcpy(sequences[i].find,sequences_cmp[i].find);
+    sequences[i].replace=(char*)malloc(strlen(sequences_cmp[i].replace)+1);
     if (sequences[i].replace!=NULL)
-      strcpy(sequences[i].replace,str);
+      strcpy(sequences[i].replace,sequences_cmp[i].replace);
     sequences[i].savesize=sequences_cmp[i].savesize;
     if (sequences[i].find==NULL || sequences[i].replace==NULL)
       return phopt_cleanup();
@@ -699,5 +692,3 @@ static void stgopt(char *start,char *end,int (*outputfunc)(char *str))
   for (start=debut; start<end; start+=strlen(start)+1)
     outputfunc(start);
 }
-
-#undef SCPACK_TABLE
