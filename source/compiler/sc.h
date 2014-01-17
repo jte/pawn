@@ -669,7 +669,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin);
 
 /* function prototypes in SC7.C */
 SC_FUNC void stgbuffer_cleanup(void);
-SC_FUNC void stgmark(char mark);
+SC_FUNC void stgmark(unsigned char mark);
 SC_FUNC void stgwrite(const char *st);
 SC_FUNC void stgout(int index);
 SC_FUNC void stgdel(int index,cell code_index);

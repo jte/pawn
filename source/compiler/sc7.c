@@ -68,26 +68,26 @@
   #pragma warning(pop)
 #endif
 
-static int stgstring(char *start,char *end);
-static void stgopt(char *start,char *end,int (*outputfunc)(char *str));
+static int stgstring(unsigned char *start,unsigned char *end);
+static void stgopt(unsigned char *start,unsigned char *end,int (*outputfunc)(char *str));
 
 
 #define sSTG_GROW   512
 #define sSTG_MAX    20480
 
-static char *stgbuf=NULL;
+static unsigned char *stgbuf=NULL;
 static int stgmax=0;    /* current size of the staging buffer */
 
-static char *stgpipe=NULL;
+static unsigned char *stgpipe=NULL;
 static int pipemax=0;   /* current size of the stage pipe, a second staging buffer */
 static int pipeidx=0;
 
 #define CHECK_STGBUFFER(index) if ((int)(index)>=stgmax)  grow_stgbuffer(&stgbuf, stgmax, (index)+1)
 #define CHECK_STGPIPE(index)   if ((int)(index)>=pipemax) grow_stgbuffer(&stgpipe, pipemax, (index)+1)
 
-static void grow_stgbuffer(char **buffer, int curmax, int requiredsize)
+static void grow_stgbuffer(unsigned char **buffer, int curmax, int requiredsize)
 {
-  char *p;
+  unsigned char *p;
   int clear= (*buffer==NULL); /* if previously none, empty buffer explicitly */
 
   assert(curmax<requiredsize);
@@ -98,9 +98,9 @@ static void grow_stgbuffer(char **buffer, int curmax, int requiredsize)
     error(102,"staging buffer");    /* staging buffer overflow (fatal error) */
   curmax=requiredsize+sSTG_GROW;
   if (*buffer!=NULL)
-    p=(char *)realloc(*buffer,curmax*sizeof(char));
+    p=(unsigned char *)realloc(*buffer,curmax*sizeof(char));
   else
-    p=(char *)malloc(curmax*sizeof(char));
+    p=(unsigned char *)malloc(curmax*sizeof(char));
   if (p==NULL)
     error(102,"staging buffer");    /* staging buffer overflow (fatal error) */
   *buffer=p;
@@ -141,7 +141,7 @@ SC_FUNC void stgbuffer_cleanup(void)
  *                     stgbuf  (altered)
  *                     staging (referred to only)
  */
-SC_FUNC void stgmark(char mark)
+SC_FUNC void stgmark(unsigned char mark)
 {
   if (staging) {
     CHECK_STGBUFFER(stgidx);
@@ -203,12 +203,12 @@ SC_FUNC void stgwrite(const char *st)
     CHECK_STGBUFFER(stgidx);
     stgbuf[stgidx++]='\0';
   } else {
-    len=(stgbuf!=NULL) ? strlen(stgbuf) : 0;
+    len=(stgbuf!=NULL) ? strlen((char*)stgbuf) : 0;
     CHECK_STGBUFFER(len+strlen(st)+1);
-    strcat(stgbuf,st);
-    len=strlen(stgbuf);
+    strcat((char*)stgbuf,st);
+    len=strlen((char*)stgbuf);
     if (len>0 && stgbuf[len-1]=='\n') {
-      filewrite(stgbuf);
+      filewrite((char*)stgbuf);
       stgbuf[0]='\0';
     } /* if */
   } /* if */
@@ -246,15 +246,15 @@ SC_FUNC void stgout(int index)
       /* there is no sense in re-optimizing if the order of the sub-expressions
        * did not change; so output directly
        */
-      for (idx=0; idx<pipeidx; idx+=strlen(stgpipe+idx)+1)
-        filewrite(stgpipe+idx);
+      for (idx=0; idx<pipeidx; idx+=strlen((char*)stgpipe+idx)+1)
+        filewrite((char*)stgpipe+idx);
     } /* if */
   } /* if */
   pipeidx=0;  /* reset second pipe */
 }
 
 typedef struct {
-  char *start,*end;
+  unsigned char *start,*end;
 } argstack;
 
 /*  stgstring
@@ -279,9 +279,9 @@ typedef struct {
  *     '[...|...]  invalid, first string doesn't start with '|'
  *     '[|...|]    invalid
  */
-static int stgstring(char *start,char *end)
+static int stgstring(unsigned char *start,unsigned char *end)
 {
-  char *ptr;
+  unsigned char *ptr;
   int nest,argc,arg;
   argstack *stack;
   int reordered=0;
@@ -319,7 +319,7 @@ static int stgstring(char *start,char *end)
             } /* if */
             start++;
           } else {
-            start+=strlen(start)+1;
+            start+=strlen((char*)start)+1;
           } /* if */
         } /* switch */
       } while (nest); /* enddo */
@@ -333,7 +333,7 @@ static int stgstring(char *start,char *end)
     } else {
       ptr=start;
       while (ptr<end && *ptr!=sSTARTREORDER)
-        ptr+=strlen(ptr)+1;
+        ptr+=strlen((char*)ptr)+1;
       stgopt(start,ptr,rebuffer);
       start=ptr;
     } /* if */
@@ -385,8 +385,8 @@ SC_FUNC void stgset(int onoff)
     /* write any contents that may be put in the buffer by stgwrite()
      * when "staging" was 0
      */
-    if (strlen(stgbuf)>0)
-      filewrite(stgbuf);
+    if (strlen((char*)stgbuf)>0)
+      filewrite((char*)stgbuf);
   } /* if */
   stgbuf[0]='\0';
 }
@@ -631,12 +631,12 @@ static void strreplace(char *dest,char *replace,int sub_length,int repl_length,i
  *  The longest sequences should probably be checked first.
  */
 
-static void stgopt(char *start,char *end,int (*outputfunc)(char *str))
+static void stgopt(unsigned char *start,unsigned char *end,int (*outputfunc)(char *str))
 {
   char symbols[MAX_OPT_VARS][MAX_ALIAS+1];
   int seq,match_length,repl_length;
   int matches;
-  char *debut=start;  /* save original start of the buffer */
+  unsigned char *debut=start;  /* save original start of the buffer */
 
   assert(sequences!=NULL);
   /* do not match anything if debug-level is maximum */
@@ -656,7 +656,7 @@ static void stgopt(char *start,char *end,int (*outputfunc)(char *str))
               continue;
             } /* if */
           } /* if */
-          if (matchsequence(start,end,sequences[seq].find,symbols,&match_length)) {
+          if (matchsequence((char*)start,(char*)end,sequences[seq].find,symbols,&match_length)) {
             char *replace=replacesequence(sequences[seq].replace,symbols,&repl_length);
             /* If the replacement is bigger than the original section, we may need
              * to "grow" the staging buffer. This is quite complex, due to the
@@ -668,7 +668,7 @@ static void stgopt(char *start,char *end,int (*outputfunc)(char *str))
              */
             assert(match_length>=repl_length);
             if (match_length>=repl_length) {
-              strreplace(start,replace,match_length,repl_length,(int)(end-start));
+              strreplace((char*)start,replace,match_length,repl_length,(int)(end-start));
               end-=match_length-repl_length;
               free(replace);
               code_idx-=sequences[seq].savesize;
@@ -684,11 +684,11 @@ static void stgopt(char *start,char *end,int (*outputfunc)(char *str))
           } /* if */
         } /* while */
         assert(sequences[seq].find==NULL || *sequences[seq].find=='\0' && pc_optimize==sOPTIMIZE_NOMACRO);
-        start += strlen(start) + 1;       /* to next string */
+        start += strlen((char*)start) + 1;       /* to next string */
       } /* while (start<end) */
     } while (matches>0);
   } /* if (pc_optimize>sOPTIMIZE_NONE && sc_status==statWRITE) */
 
-  for (start=debut; start<end; start+=strlen(start)+1)
-    outputfunc(start);
+  for (start=debut; start<end; start+=strlen((char*)start)+1)
+    outputfunc((char*)start);
 }

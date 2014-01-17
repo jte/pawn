@@ -5327,7 +5327,7 @@ static int dofor(void)
   assert(stgidx==0);
   index=stgidx;
   stgmark(sSTARTREORDER);
-  stgmark((char)(sEXPRSTART+0));    /* mark start of 2nd expression in stage */
+  stgmark(sEXPRSTART+0);    /* mark start of 2nd expression in stage */
   setlabel(skiplab);                /* jump to this point after 1st expression */
   if (matchtoken(';')) {
     endlessloop=1;
@@ -5335,7 +5335,7 @@ static int dofor(void)
     endlessloop=test(wq[wqEXIT],TEST_PLAIN,FALSE);/* expression 2 (jump to wq[wqEXIT] if false) */
     needtoken(';');
   } /* if */
-  stgmark((char)(sEXPRSTART+1));    /* mark start of 3th expression in stage */
+  stgmark(sEXPRSTART+1);    /* mark start of 3th expression in stage */
   if (!matchtoken(endtok)) {
     doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);    /* expression 3 */
     needtoken(endtok);
