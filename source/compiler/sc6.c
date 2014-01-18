@@ -1321,7 +1321,6 @@ static void append_dbginfo(FILE *fout)
     assert(strlen(constptr->name)>0);
     id1=(int16_t)constptr->value;
     id2=(int16_t)constptr->index;
-    address=(ucell)constptr->value;
     #if BYTE_ORDER==BIG_ENDIAN
       align16(&id1);
       align16(&id2);
